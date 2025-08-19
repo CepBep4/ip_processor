@@ -186,6 +186,7 @@ def process_incoming_mail(configs):
                 # Фильтрация по отправителю и теме
                 if sender_filter and not any(s in from_addr for s in sender_filter):
                     print(f"отправитель не в фильтре")
+                    print(from_addr)
                     continue
                 if subject_filter and not any(s in subject for s in subject_filter):
                     print(f"тема не в фильтре")
