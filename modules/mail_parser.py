@@ -161,7 +161,8 @@ def process_incoming_mail(configs):
         print(f"непрочитанных писем: {total_unread}")
         
         if total_unread == 0:
-            return
+            # return
+            pass
         
         processed_count = 0
         saved_attachments = 0
