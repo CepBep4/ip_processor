@@ -1,0 +1,12 @@
+filters:
+  - name: "Valberis"
+    from: "reestry@valberis.ru"
+    subject_regexp: "Реестр.*Valberis"
+    folder: "5МК ВБ Финанс"
+    creditor_id: "VALB"
+
+  - name: "Ozon"
+    from: "reestry@ozon.ru"
+    subject_regexp: "Реестр.*Ozon"
+    folder: "ОЗОН"
+    creditor_id: "OZON"

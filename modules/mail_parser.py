@@ -31,6 +31,15 @@ def load_mail_settings(configs):
     """Настройки подключения из конфигов"""
     return configs.get('mail_settings.yaml', {})
 
+def load_mail_filters():
+    """Загрузка фильтров из mail_filters.yaml"""
+    try:
+        with open('config/mail_filters.yaml', 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f)['filters']
+    except Exception as e:
+        print(f"Ошибка загрузки mail_filters.yaml: {e}")
+        return []
+
 def get_next_folder_number(base_path):
     """Получение номера следующей папки"""
     max_num = 0
@@ -125,6 +134,46 @@ def test_mail_connection(mail_cfg):
     except Exception as e:
         return False, None
 
+def process_email(msg, creditor_id, creditor_folder, subject):
+    """Обработка письма с созданием правильной структуры по ТЗ"""
+    today = datetime.datetime.now().strftime('%d.%m.%Y')
+    base_path = os.path.join("сеть", "asf01", "files", "юристы", creditor_folder, "Реестры")
+    os.makedirs(base_path, exist_ok=True)
+    
+    n = get_next_folder_number(base_path)
+    session_folder = os.path.join(base_path, f"{n}({today})")
+    os.makedirs(session_folder, exist_ok=True)
+    
+    print(f"📁 Создана папка по ТЗ: {session_folder}")
+    
+    attachments = []
+    for part in msg.walk():
+        if part.get_content_maintype() == 'multipart':
+            continue
+        filename = decode_str(part.get_filename())
+        if not filename:
+            continue
+        
+        filepath = os.path.join(session_folder, filename)
+        with open(filepath, 'wb') as f:
+            f.write(part.get_payload(decode=True))
+        attachments.append({
+            "creditor_id": creditor_id,
+            "email_subject": subject,
+            "email_date": datetime.datetime.now().isoformat(),
+            "saved_path": filepath,
+            "original_filename": filename
+        })
+        print(f"💾 Сохранено: {filename}")
+    
+    # Сохранение метаданных по ТЗ
+    meta_path = os.path.join(session_folder, 'meta.json')
+    with open(meta_path, 'w', encoding='utf-8') as f:
+        json.dump(attachments, f, ensure_ascii=False, indent=2)
+    
+    print(f"[{creditor_id}] Письмо обработано, создана папка: {session_folder}")
+    return len(attachments)
+
 def process_incoming_mail(configs):   
     mail_cfg = load_mail_settings(configs)
     imap_host = mail_cfg.get('host', 'imap.gmail.com')
@@ -133,8 +182,9 @@ def process_incoming_mail(configs):
     mailbox = mail_cfg.get('mailbox', 'INBOX')
     save_dir = mail_cfg.get('save_dir', 'incoming')
     allowed_exts = set(mail_cfg.get('allowed_extensions', ['.xlsx', '.xls', '.zip', '.rar', '.pdf']))
-    sender_filter = mail_cfg.get('sender_filter', [])
-    subject_filter = mail_cfg.get('subject_filter', [])
+    
+    # Загружаем фильтры по ТЗ
+    mail_filters = load_mail_filters()
     
     # Создаем директорию для сохранения
     os.makedirs(save_dir, exist_ok=True)
@@ -182,54 +232,26 @@ def process_incoming_mail(configs):
                 subject = decode_str(msg.get('Subject', ''))
                 date = decode_str(msg.get('Date', ''))
     
+                # Новая логика фильтрации по ТЗ
+                creditor_found = False
+                for f in mail_filters:
+                    if (re.search(f['subject_regexp'], subject, re.IGNORECASE) and 
+                        from_addr == f['from']):
+                        
+                        creditor_id = f['creditor_id']
+                        creditor_folder = f['folder']
+                        
+                        print(f"✅ Найден кредитор: {creditor_id} ({f['name']})")
+                        
+                        # Обрабатываем письмо с правильной структурой по ТЗ
+                        attach_count = process_email(msg, creditor_id, creditor_folder, subject)
+                        saved_attachments += attach_count
+                        creditor_found = True
+                        break
                 
-                # Фильтрация по отправителю и теме
-                if sender_filter and not any(s in from_addr for s in sender_filter):
-                    print(f"отправитель не в фильтре")
-                    print(from_addr)
+                if not creditor_found:
+                    print(f"❌ Кредитор не определен для: {from_addr} - {subject}")
                     continue
-                if subject_filter and not any(s in subject for s in subject_filter):
-                    print(f"тема не в фильтре")
-                    continue
-                
-                print("письмо прошло фильтрацию")
-                
-                # Формируем уникальную папку для письма
-                date_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                safe_subject = ''.join(c for c in subject if c.isalnum() or c in (' ', '-', '_'))[:60]
-                msg_dir = os.path.join(save_dir, f"{date_str}_{safe_subject}".strip())
-                os.makedirs(msg_dir, exist_ok=True)
-                print(f"📁 Создана папка: {msg_dir}")
-                
-                # Сохраняем вложения
-                print("📎 Ищем вложения...")
-                attach_count = 0
-                for part in msg.walk():
-                    if part.get_content_maintype() == 'multipart':
-                        continue
-                    if part.get('Content-Disposition') is None:
-                        continue
-                    
-                    filename = decode_str(part.get_filename())
-                    if not filename:
-                        continue
-                    
-                    ext = os.path.splitext(filename)[-1].lower()
-                    if ext not in allowed_exts:
-                        print(f"⏭️ Пропускаем {filename} - расширение {ext} не разрешено")
-                        continue
-                    
-                    filepath = os.path.join(msg_dir, filename)
-                    with open(filepath, 'wb') as f:
-                        f.write(part.get_payload(decode=True))
-                    attach_count += 1
-                    print(f"💾 Сохранено: {filename}")
-                
-                if attach_count > 0:
-                    print(f"✅ Сохранено вложений: {attach_count}")
-                    saved_attachments += attach_count
-                else:
-                    print("ℹ️ Вложений не найдено")
                 
                 processed_count += 1
                 print(f"✅ Письмо {i} обработано успешно")
