@@ -1,0 +1,4 @@
+id,name,email,role,description
+1,Иванов И.И.,ivanov@company.com,Оператор,Основной оператор системы
+2,Петров П.П.,petrov@company.com,Администратор,Системный администратор
+3,Сидоров С.С.,sidorov@company.com,Аналитик,Бизнес-аналитик 

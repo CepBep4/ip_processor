@@ -1,0 +1,16 @@
+[
+  {
+    "number_ip": "12345678901",
+    "fio": "Иванов Иван Иванович",
+    "date": "01.01.2024",
+    "creditor": "VALB",
+    "file": "test_file.pdf"
+  },
+  {
+    "number_ip": "98765432109",
+    "fio": "Петров Петр Петрович",
+    "date": "02.01.2024",
+    "creditor": "OZON",
+    "file": "test_file2.pdf"
+  }
+]

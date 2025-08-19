@@ -1,0 +1,19 @@
+host: "192.168.180.13"
+port: 993
+username: "monakhov@storm-security.ru"
+password: "8E1j?d$g"
+mailbox: "INBOX"
+save_dir: "incoming"
+allowed_extensions:
+  - ".xlsx"
+  - ".xls"
+  - ".zip"
+  - ".rar"
+  - ".pdf"
+sender_filter:
+  - "mailru.artem4445@yandex.ru"
+  - "sever-web@yandex.ru"
+subject_filter:
+  - "Договор"
+  - "Valberis"
+  - "Ozon" 

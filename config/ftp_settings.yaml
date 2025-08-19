@@ -1,0 +1,7 @@
+ftp:
+  host: "192.168.207.98"
+  port: 22
+  user: "ftpuser"
+  password: "securePassword"
+  base_path: "/mnt/ssd4tb/ftp_server"
+  namespace: "ip_loans" 

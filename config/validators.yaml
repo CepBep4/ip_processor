@@ -1,0 +1,27 @@
+date:
+  regex: '^\d{2}\.\d{2}\.\d{4}$'
+  description: 'Дата в формате ДД.ММ.ГГГГ'
+
+number_ip:
+  regex: '^\d{8,13}$'
+  description: 'Номер договора 8-13 цифр'
+
+fio:
+  regex: '[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+'
+  description: 'ФИО в формате Фамилия Имя Отчество'
+
+inn:
+  regex: '^\d{10,12}$'
+  description: 'ИНН 10 или 12 цифр'
+
+phone:
+  regex: '^\+?\d{10,12}$'
+  description: 'Телефон 10-12 цифр с возможным +'
+
+email:
+  regex: '[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+'
+  description: 'Email адрес'
+
+amount:
+  regex: '^\d+([.,]\d{2})?$'
+  description: 'Сумма с возможными копейками' 

@@ -1,0 +1,10 @@
+extension,description,priority
+xlsx,Excel файл,1
+xls,Excel файл (старый формат),2
+pdf,PDF документ,3
+docx,Word документ,4
+jpg,Изображение JPEG,5
+jpeg,Изображение JPEG,5
+png,Изображение PNG,6
+zip,Архив ZIP,7
+rar,Архив RAR,8 
