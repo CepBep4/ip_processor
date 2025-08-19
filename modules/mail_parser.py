@@ -52,14 +52,7 @@ def test_mail_connection(mail_cfg):
     password = mail_cfg.get('password', '')
     port = mail_cfg.get('port', 993)
     
-    print("🚀 Тестируем подключение к почте...")
-    print("=" * 60)
-    print(f"📧 Сервер: {server}:{port}")
-    print(f"👤 Логин: {username}")
-    print("=" * 60)
-    
     # Проверяем доступность сервера
-    print("🔍 Проверяем доступность сервера...")
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
@@ -67,9 +60,8 @@ def test_mail_connection(mail_cfg):
         sock.close()
         
         if result == 0:
-            print(f"✅ Сервер {server}:{port} доступен")
+            ...
         else:
-            print(f"⚠️ Порт {port} недоступен, пробуем порт 143...")
             port = 143
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
@@ -77,55 +69,40 @@ def test_mail_connection(mail_cfg):
             sock.close()
             
             if result == 0:
-                print(f"✅ Сервер {server}:{port} доступен")
+                ...
             else:
-                print(f"❌ Сервер {server}:{port} недоступен")
                 return False, None
     except Exception as e:
-        print(f"⚠️ Не удалось проверить доступность: {e}")
+        ...
     
     connection = None
     
     try:
         # Шаг 1: Создание SSL контекста
-        print("🔒 Создаем SSL контекст...")
         context = ssl.create_default_context()
         # Отключаем проверку сертификата для локальных IP
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-        print("✅ SSL контекст создан (проверка сертификата отключена)")
         
         # Шаг 2: Подключение к серверу
-        print(f"🔄 Подключаемся к {server}:{port}...")
         try:
             # Пробуем SSL подключение
             connection = imaplib.IMAP4_SSL(server, port, ssl_context=context)
-            print("✅ SSL соединение установлено")
         except ssl.SSLError as ssl_error:
-            print(f"⚠️ SSL подключение не удалось: {ssl_error}")
-            print("🔄 Пробуем подключение без SSL...")
             try:
                 # Пробуем обычное подключение на порту 143
                 connection = imaplib.IMAP4(server, 143)
-                print("✅ Обычное соединение установлено (порт 143)")
                 port = 143
             except Exception as e:
-                print(f"❌ Обычное подключение тоже не удалось: {e}")
                 raise
         
         # Шаг 3: Получение возможностей сервера
-        print("📋 Получаем возможности сервера...")
         capabilities = connection.capabilities
-        print(f"✅ Возможности: {capabilities}")
-        print(f"🔌 Используемый порт: {port}")
         
         # Шаг 4: Авторизация
-        print("🔐 Выполняем авторизацию...")
         connection.login(username, password)
-        print("✅ Авторизация успешна!")
         
         # Шаг 5: Получение списка папок
-        print("📁 Получаем список папок...")
         _, folders = connection.list()
         folder_names = []
         for folder in folders:
@@ -133,56 +110,22 @@ def test_mail_connection(mail_cfg):
                 folder_name = folder.decode().split('"')[-2]
                 folder_names.append(folder_name)
         
-        print(f"✅ Найдено папок: {len(folder_names)}")
-        print(f"📂 Папки: {', '.join(folder_names[:5])}")
-        if len(folder_names) > 5:
-            print(f"   ... и еще {len(folder_names) - 5} папок")
-        
-        print("\n" + "=" * 60)
-        print("🎉 ПОДКЛЮЧЕНИЕ УСПЕШНО!")
-        print("✅ Подключение к почте работает корректно")
-        print(f"📁 Доступно папок: {len(folder_names)}")
-        print("=" * 60)
         
         return True, connection
         
     except imaplib.IMAP4.error as e:
-        print(f"❌ Ошибка IMAP: {e}")
-        print("💡 Возможные причины:")
-        print("   - Неправильный логин или пароль")
-        print("   - Пользователь заблокирован")
-        print("   - Проблемы с настройками сервера")
         return False, None
         
     except ssl.SSLError as e:
-        print(f"❌ Ошибка SSL: {e}")
-        print("💡 Возможные причины:")
-        print("   - Проблемы с SSL сертификатом")
-        print("   - Неправильный порт")
-        print("   - Сервер не поддерживает SSL")
         return False, None
         
     except ConnectionRefusedError:
-        print(f"❌ Соединение отклонено")
-        print("💡 Возможные причины:")
-        print(f"   - Сервер {server} недоступен")
-        print(f"   - Порт {port} закрыт")
-        print("   - IMAP сервис не запущен")
         return False, None
         
     except Exception as e:
-        print(f"❌ Неожиданная ошибка: {e}")
-        print("💡 Проверьте:")
-        print("   - Доступность сервера")
-        print("   - Правильность настроек")
-        print("   - Сетевые настройки")
         return False, None
 
-def process_incoming_mail(configs):
-    """Основная функция обработки почты"""
-    print("📧 ЗАПУСК ОБРАБОТКИ ПОЧТЫ")
-    print("=" * 60)
-    
+def process_incoming_mail(configs):   
     mail_cfg = load_mail_settings(configs)
     imap_host = mail_cfg.get('host', 'imap.gmail.com')
     imap_user = mail_cfg.get('username', '')
@@ -193,21 +136,10 @@ def process_incoming_mail(configs):
     sender_filter = mail_cfg.get('sender_filter', [])
     subject_filter = mail_cfg.get('subject_filter', [])
     
-    print(f"📧 Сервер: {imap_host}")
-    print(f"👤 Пользователь: {imap_user}")
-    print(f"📁 Папка: {mailbox}")
-    print(f"💾 Директория сохранения: {save_dir}")
-    print(f"📎 Разрешенные расширения: {', '.join(allowed_exts)}")
-    print(f"👥 Фильтр отправителей: {sender_filter if sender_filter else 'Все'}")
-    print(f"📝 Фильтр тем: {subject_filter if subject_filter else 'Все'}")
-    print("=" * 60)
-    
     # Создаем директорию для сохранения
     os.makedirs(save_dir, exist_ok=True)
-    print(f"✅ Директория {save_dir} готова")
     
     # Тестируем подключение
-    print("\n🔍 Тестируем подключение к почте...")
     success, connection = test_mail_connection(mail_cfg)
     
     if not success:
@@ -216,34 +148,29 @@ def process_incoming_mail(configs):
     
     try:
         # Выбираем папку
-        print(f"\n📁 Выбираем папку {mailbox}...")
         connection.select(mailbox)
-        print(f"✅ Папка {mailbox} выбрана")
+        print(f"папка {mailbox} выбрана")
         
         # Поиск писем (только новые/непрочитанные)
-        print("🔍 Ищем непрочитанные письма...")
         status, messages = connection.search(None, 'UNSEEN')
         if status != 'OK':
-            print("❌ Ошибка поиска писем")
             return
         
         message_list = messages[0].split()
         total_unread = len(message_list)
-        print(f"✅ Найдено непрочитанных писем: {total_unread}")
+        print(f"непрочитанных писем: {total_unread}")
         
         if total_unread == 0:
-            print("📭 Новых писем нет")
             return
         
         processed_count = 0
         saved_attachments = 0
         
         for i, num in enumerate(message_list, 1):
-            print(f"\n📨 Обрабатываем письмо {i}/{total_unread}...")
+            print(f"\nобрабатываем письмо {i}/{total_unread}...")
             
             try:
                 # Получаем письмо
-                print("📥 Загружаем письмо...")
                 res, msg_data = connection.fetch(num, '(RFC822)')
                 if res != 'OK':
                     print(f"⚠️ Не удалось загрузить письмо {num}")
@@ -253,20 +180,17 @@ def process_incoming_mail(configs):
                 from_addr = decode_str(msg.get('From', ''))
                 subject = decode_str(msg.get('Subject', ''))
                 date = decode_str(msg.get('Date', ''))
-                
-                print(f"📧 От: {from_addr}")
-                print(f"📝 Тема: {subject}")
-                print(f"📅 Дата: {date}")
+    
                 
                 # Фильтрация по отправителю и теме
                 if sender_filter and not any(s in from_addr for s in sender_filter):
-                    print(f"⏭️ Пропускаем - отправитель не в фильтре")
+                    print(f"отправитель не в фильтре")
                     continue
                 if subject_filter and not any(s in subject for s in subject_filter):
-                    print(f"⏭️ Пропускаем - тема не в фильтре")
+                    print(f"тема не в фильтре")
                     continue
                 
-                print("✅ Письмо прошло фильтрацию")
+                print("письмо прошло фильтрацию")
                 
                 # Формируем уникальную папку для письма
                 date_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
