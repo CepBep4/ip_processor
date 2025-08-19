@@ -152,7 +152,7 @@ def process_incoming_mail(configs):
         print(f"папка {mailbox} выбрана")
         
         # Поиск писем (только новые/непрочитанные)
-        status, messages = connection.search(None, 'UNSEEN')
+        status, messages = connection.search(None, 'SEEN')
         if status != 'OK':
             return
         
