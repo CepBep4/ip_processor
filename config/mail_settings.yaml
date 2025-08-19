@@ -11,8 +11,9 @@ allowed_extensions:
   - ".rar"
   - ".pdf"
 sender_filter:
-  - "mailru.artem4445@yandex.ru"
-  - "sever-web@yandex.ru"
+  - "reestry@ozon.ru"      
+  - "legal@ozon.ru"       
+  - "finance@ozon.ru" 
 subject_filter:
   - "Договор"
   - "Valberis"
